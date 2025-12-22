@@ -91,12 +91,27 @@ void setup() {
   ledbuff =
       (CRGB *)malloc(NUM_LEDS * sizeof(CRGB)); // allocate buffer for some tests
   buffclear(ledbuff);
+
+  // background
+  matrix->fillScreenRGB888(0, 0, 63);
+  // for checking orientation
+  matrix->drawPixelRGB888(0, 0, 1, 1, 1);
+  matrix->drawPixelRGB888(0, 31, 1, 1, 1);
+
+  // path example
+  matrix->fillRect(48, 32, 1, 12, (1 << 16) - 1);
+  matrix->fillRect(48, 44, 10, 1, (1 << 16) - 1);
+  matrix->fillRect(58, 44, 1, 10, (1 << 16) - 1);
+  matrix->fillRect(38, 54, 20, 1, (1 << 16) - 1);
 }
 
 uint8_t wheelval = 0;
 void loop() {
 
   Serial.printf("Cycle: %d\n", ++cycles);
+
+  delay(100);
+  return;
 
   drawText(wheelval++);
 
