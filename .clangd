@@ -1,0 +1,16 @@
+CompileFlags:
+  Add:
+    - -D__XTENSA__
+  Remove:
+    # Remove Xtensa-specific flags that clangd doesn't understand
+    - -mlongcalls
+    - -fstrict-volatile-bitfields
+    - -fno-tree-switch-conversion
+    - -fno-jump-tables
+    - -fno-tree-switch-conversion
+
+Diagnostics:
+  Suppress:
+    - asm_invalid_output_constraint
+    - inline-asm
+    - attribute_section_invalid_for_target
