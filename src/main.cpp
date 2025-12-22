@@ -172,12 +172,19 @@ void setup() {
 
 uint8_t wheelval = 0;
 void loop() {
-
+  t1 = micros();
   // Serial.printf("Cycle: %d\n", ++cycles);
   write_mask(watermask, water_draw_pixel);
   water_phase++;
+  t2 = micros() - t1;
 
-  delay(1);
+  const uint32_t wait_time = 1000;
+  if (t2 < wait_time)
+    delayMicroseconds(wait_time - t2);
+  else {
+    // Serial.printf("Waterframe took too long: %lu us\n", t2);
+    matrix->drawPixelRGB888(63, 63, 255, 0, 0);
+  }
   return;
 
   drawText(wheelval++);
