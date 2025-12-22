@@ -148,6 +148,8 @@ void setup() {
 
   mxconfig.clkphase = false;
   mxconfig.driver = HUB75_I2S_CFG::SHIFTREG;
+  mxconfig.i2sspeed = HUB75_I2S_CFG::HZ_16M;
+  mxconfig.min_refresh_rate = 120;
 
   matrix = new MatrixPanel_I2S_DMA(mxconfig);
   matrix->begin();
