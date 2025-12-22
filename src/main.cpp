@@ -71,6 +71,71 @@ uint16_t x, y;
 
 const char *str = "* ESP32 I2S DMA *";
 
+static inline uint8_t tri8(uint8_t t) {
+  uint8_t v = (t & 0x7F) << 1;
+  return (t & 0x80) ? (uint8_t)(255 - v) : v;
+}
+
+#define MASK_GROUP_SIZE (sizeof(uint64_t) * 8)
+#define MASK_WIDTH PANEL_WIDTH / MASK_GROUP_SIZE
+template <typename F>
+void write_mask(const uint64_t (&mask)[PANEL_HEIGHT][MASK_WIDTH], F draw_fn) {
+  for (uint16_t y = 0; y < PANEL_HEIGHT; y++) {
+    for (uint16_t x_group = 0; x_group < MASK_WIDTH; x_group++) {
+      uint64_t row = mask[y][x_group];
+
+      while (row) {
+        int next_location = __builtin_ctzll(row);
+        uint16_t x = x_group * MASK_GROUP_SIZE + next_location;
+        draw_fn(x, y);
+        row &= ~(1ULL << next_location);
+      }
+    }
+  }
+}
+
+const uint64_t watermask[PANEL_HEIGHT][MASK_WIDTH] = {
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0},
+    {0x0000FFFFFFFF0000},
+    {0x0000FFFFFFFF0000},
+    {0x0000FFFFFFFF0000},
+    {0x0000FFFFFFFF0000},
+    {0x0000FFFFFFFF0000},
+    {0x0000FFFFFFFF0000},
+};
+uint8_t water_phase = 0;
+
+void water_draw_pixel(uint8_t x, uint8_t y) {
+  const uint8_t low = 192;
+  const uint8_t high = 255;
+
+  uint8_t idx = 32 * (int8_t)(x - y) + water_phase;
+  uint16_t mag = tri8(idx);
+  uint16_t mag_scaled = (mag * (uint16_t)(high - low)) >> 8;
+
+  uint8_t mag_shifted = low + mag_scaled;
+
+  matrix->drawPixelRGB888(x, y, 0, 0, mag_shifted);
+}
+
 void setup() {
 
   Serial.begin(BAUD_RATE);
@@ -108,9 +173,11 @@ void setup() {
 uint8_t wheelval = 0;
 void loop() {
 
-  Serial.printf("Cycle: %d\n", ++cycles);
+  // Serial.printf("Cycle: %d\n", ++cycles);
+  write_mask(watermask, water_draw_pixel);
+  water_phase++;
 
-  delay(100);
+  delay(1);
   return;
 
   drawText(wheelval++);
