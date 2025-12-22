@@ -138,7 +138,9 @@ void water_draw_pixel(uint8_t x, uint8_t y) {
 
 void setup() {
 
+  delay(100);
   Serial.begin(BAUD_RATE);
+  delay(500);
   Serial.println("Starting pattern test...");
 
   // redefine pins if required
