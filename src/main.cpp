@@ -155,6 +155,7 @@ void setup() {
   mxconfig.latch_blanking = 8;
   mxconfig.min_refresh_rate = 0;
   mxconfig.setPixelColorDepthBits(8);
+  mxconfig.double_buff = true;
 
   matrix = new MatrixPanel_I2S_DMA(mxconfig);
   matrix->begin();
@@ -164,18 +165,23 @@ void setup() {
       (CRGB *)malloc(NUM_LEDS * sizeof(CRGB)); // allocate buffer for some tests
   buffclear(ledbuff);
 
-  // background
-  matrix->fillScreenRGB888(0, 0, 63);
-  // for checking orientation
-  matrix->drawPixelRGB888(0, 0, 1, 1, 1);
-  matrix->drawPixelRGB888(0, 31, 1, 1, 1);
+  for (uint8_t i = 0; i < 2; i++) {
+    matrix->flipDMABuffer();
 
-  // path example
-  matrix->fillRect(48, 32, 1, 12, (1 << 16) - 1);
-  matrix->fillRect(48, 44, 10, 1, (1 << 16) - 1);
-  matrix->fillRect(58, 44, 1, 10, (1 << 16) - 1);
-  matrix->fillRect(38, 54, 20, 1, (1 << 16) - 1);
+    delay(1000 / matrix->calculated_refresh_rate);
 
+    // background
+    matrix->fillScreenRGB888(0, 0, 63);
+    // for checking orientation
+    matrix->drawPixelRGB888(0, 0, 1, 1, 1);
+    matrix->drawPixelRGB888(0, 31, 1, 1, 1);
+
+    // path example
+    matrix->fillRect(48, 32, 1, 12, (1 << 16) - 1);
+    matrix->fillRect(48, 44, 10, 1, (1 << 16) - 1);
+    matrix->fillRect(58, 44, 1, 10, (1 << 16) - 1);
+    matrix->fillRect(38, 54, 20, 1, (1 << 16) - 1);
+  }
   Serial.printf(
       "Matrix initialized, refresh rate: %u Hz, color depth: %u bits\n",
       matrix->calculated_refresh_rate, mxconfig.getPixelColorDepthBits());
@@ -200,11 +206,21 @@ void loop() {
   write_mask(watermask, water_draw_pixel);
 #endif
   water_phase++;
-  t2 = millis() - t1;
 
-  unsigned long wait_time = 10;
-  if (t2 < wait_time) {
-    delay(wait_time - t2);
+  matrix->flipDMABuffer();
+  unsigned long t_flip = millis();
+  // now, wait for frame flip to actually happen
+  // ... can do other, non frame buffer related work here
+  unsigned long dma_flip_time = 1000 / matrix->calculated_refresh_rate;
+  t2 = millis() - t_flip;
+  if (t2 < dma_flip_time) {
+    delay(dma_flip_time - t2);
+  }
+
+  unsigned long frame_time = 15;
+  t2 = millis() - t1;
+  if (t2 < frame_time) {
+    delay(frame_time - t2);
     // Serial.printf("frame time: %lu ms\n", t2);
   } else {
     // Serial.printf("took too long: %lu ms\n", t2);
