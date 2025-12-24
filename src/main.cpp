@@ -176,8 +176,9 @@ void setup() {
   matrix->fillRect(58, 44, 1, 10, (1 << 16) - 1);
   matrix->fillRect(38, 54, 20, 1, (1 << 16) - 1);
 
-  Serial.printf("Matrix initialized with calculated refresh rate: %d Hz\n",
-                matrix->calculated_refresh_rate);
+  Serial.printf(
+      "Matrix initialized, refresh rate: %u Hz, color depth: %u bits\n",
+      matrix->calculated_refresh_rate, mxconfig.getPixelColorDepthBits());
 }
 
 // #define GRAD_TEST
