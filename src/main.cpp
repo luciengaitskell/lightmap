@@ -153,7 +153,7 @@ void setup() {
   mxconfig.driver = HUB75_I2S_CFG::SHIFTREG;
   mxconfig.i2sspeed = HUB75_I2S_CFG::HZ_20M;
   mxconfig.latch_blanking = 8;
-  mxconfig.min_refresh_rate = 100;
+  mxconfig.min_refresh_rate = 0;
   mxconfig.setPixelColorDepthBits(8);
 
   matrix = new MatrixPanel_I2S_DMA(mxconfig);
