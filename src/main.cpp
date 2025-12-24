@@ -192,6 +192,7 @@ void loop() {
   } else {
     // Serial.printf("took too long: %lu ms\n", t2);
     matrix->drawPixelRGB888(63, 63, 255, 0, 0);
+    delay(1);
   }
   return;
 
