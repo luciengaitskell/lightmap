@@ -180,12 +180,13 @@ void setup() {
                 matrix->calculated_refresh_rate);
 }
 
-// #define STEP_TEST
+// #define GRAD_TEST
+// #define STEP_MODE
 uint8_t wheelval = 0;
 void loop() {
   t1 = millis();
   // Serial.printf("Cycle: %d\n", ++cycles);
-#ifdef STEP_TEST
+#ifdef GRAD_TEST
   Serial.printf("Water phase: %d, refresh rate: %d\n", water_phase,
                 matrix->calculated_refresh_rate);
   matrix->fillScreenRGB888(0, 0, water_phase);
@@ -209,7 +210,7 @@ void loop() {
     matrix->drawPixelRGB888(63, 63, 255, 0, 0);
     delay(1);
   }
-#ifdef STEP_TEST
+#ifdef STEP_MODE
   while (Serial.available() == 0) {
     yield();
   }
