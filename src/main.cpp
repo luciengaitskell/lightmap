@@ -121,13 +121,13 @@ const uint64_t watermask[PANEL_HEIGHT][MASK_WIDTH] = {
     {0x0000FFFFFFFF0000},
     {0x0000FFFFFFFF0000},
 };
-uint8_t water_phase = 0;
+uint16_t water_phase = 0;
 
 void water_draw_pixel(uint8_t x, uint8_t y) {
   const uint8_t low = 192;
   const uint8_t high = 255;
 
-  uint8_t idx = 32 * (int8_t)(x - y) + water_phase;
+  uint8_t idx = 32 * (int8_t)(x - y) + ((water_phase >> 1) & 0xFF);
   uint16_t mag = tri8(idx);
   uint16_t mag_scaled = (mag * (uint16_t)(high - low)) >> 8;
 
