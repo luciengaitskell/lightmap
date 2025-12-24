@@ -140,6 +140,7 @@ void setup() {
 
   delay(100);
   Serial.begin(BAUD_RATE);
+  Serial.setDebugOutput(true); // Shows ESP32 system debug messages
   delay(500);
   Serial.println("Starting pattern test...");
 
