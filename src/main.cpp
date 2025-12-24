@@ -151,8 +151,10 @@ void setup() {
 
   mxconfig.clkphase = false;
   mxconfig.driver = HUB75_I2S_CFG::SHIFTREG;
-  mxconfig.i2sspeed = HUB75_I2S_CFG::HZ_16M;
-  mxconfig.min_refresh_rate = 120;
+  mxconfig.i2sspeed = HUB75_I2S_CFG::HZ_20M;
+  mxconfig.latch_blanking = 8;
+  mxconfig.min_refresh_rate = 100;
+  mxconfig.setPixelColorDepthBits(8);
 
   matrix = new MatrixPanel_I2S_DMA(mxconfig);
   matrix->begin();
@@ -183,7 +185,7 @@ void loop() {
   water_phase++;
   t2 = millis() - t1;
 
-  unsigned long wait_time = 2;
+  unsigned long wait_time = 10;
   if (t2 < wait_time) {
     delay(wait_time - t2);
     // Serial.printf("frame time: %lu ms\n", t2);
