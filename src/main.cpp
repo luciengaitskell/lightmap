@@ -112,7 +112,7 @@ void loop() {
     }
   }
 #else
-  write_mask(watermask, water_draw_pixel);
+  write_mask(water_mask, water_draw_pixel);
 #endif
   water_phase++;
 
