@@ -17,8 +17,15 @@ unsigned long t1, t2;
 
 unsigned int displayed_path_steps = 0;
 
-void write_path(const uint8_t (*path)[2], uint16_t length) {
+void write_path(const int16_t (*path)[2], uint16_t length) {
   for (uint16_t i = 0; i < length; i++) {
+    if (
+        // Off-screen path
+        path[i][0] < 0 || path[i][1] < 0 ||
+        //
+        path[i][0] >= PANEL_WIDTH || path[i][1] >= PANEL_HEIGHT) {
+      continue;
+    }
     matrix->drawPixelRGB888(path[i][0], path[i][1], 255, 255, 255);
   }
 }

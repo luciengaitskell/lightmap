@@ -39,8 +39,15 @@ def lonlat_to_pixels(lonlat, north, south, east, west, w, h):
     # Affine: col=(x-c)/a ; row=(y-f)/e (e negative for north-up)
     cols = (lonlat[:, 0] - tr.c) / tr.a
     rows = (lonlat[:, 1] - tr.f) / tr.e
-    cols = np.clip(np.floor(cols).astype(int), 0, w - 1)
-    rows = np.clip(np.floor(rows).astype(int), 0, h - 1)
+    cols = np.floor(cols).astype(int)
+    rows = np.floor(rows).astype(int)
+
+    # Sentinel values: -1 for west/north underflow, -2 for east/south overflow
+    cols = np.where(cols < 0, -1, cols)
+    cols = np.where(cols >= w, -2, cols)
+    rows = np.where(rows < 0, -1, rows)
+    rows = np.where(rows >= h, -2, rows)
+
     return np.column_stack([cols, rows]).astype(int)
 
 
@@ -68,14 +75,27 @@ def bresenham(x0, y0, x1, y1):
 
 
 def iter_path_pixels(px_points):
-    last = None
     for i in range(len(px_points) - 1):
         x0, y0 = map(int, px_points[i])
         x1, y1 = map(int, px_points[i + 1])
-        for p in bresenham(x0, y0, x1, y1):
-            if p != last:  # sequential de-dupe only
-                yield p
-                last = p
+
+        on0 = x0 >= 0 and y0 >= 0
+        on1 = x1 >= 0 and y1 >= 0
+
+        if on0 and on1:
+            # Normal in-bounds segment
+            yield from bresenham(x0, y0, x1, y1)
+        else:
+            # Off-grid involved: emit the endpoints only, avoid drawing across the map
+            yield from ((x0, y0), (x1, y1))
+
+
+def dedupe_consecutive(points):
+    last = None
+    for p in points:
+        if p != last:
+            yield p
+            last = p
 
 
 def main():
@@ -96,7 +116,7 @@ def main():
 
     count = 0
     print("pixels = {")
-    for x, y in iter_path_pixels(px):
+    for x, y in dedupe_consecutive(iter_path_pixels(px)):
         count += 1
         print(f"  {{{x}, {y}}},")
     print("}")
