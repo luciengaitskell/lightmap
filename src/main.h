@@ -41,8 +41,52 @@ static inline uint8_t tri8(uint8_t t) {
 #define PANE_HEIGHT PANEL_HEIGHT
 #define NUM_LEDS PANE_WIDTH *PANE_HEIGHT
 
+uint8_t map_coord_onscreen(const int16_t coord) {
+  if (coord == -1) {
+    return 0;
+  }
+  if (coord == -2) {
+    return PANEL_WIDTH - 1;
+  }
+  return coord;
+}
+
+template <typename F>
+void write_path(const int16_t (*path)[2], uint16_t length, F draw_fn) {
+  for (uint16_t i = 0; i < length; i++) {
+    if (
+        // Incorrect off-screen value
+        path[i][0] < -2 || path[i][1] < -2 ||
+        //
+        path[i][0] >= PANEL_WIDTH || path[i][1] >= PANEL_HEIGHT) {
+      continue;
+    }
+
+    uint8_t x = map_coord_onscreen(path[i][0]);
+    uint8_t y = map_coord_onscreen(path[i][1]);
+
+    draw_fn(x, y, (path[i][0] >= 0 && path[i][1] >= 0), (i == length - 1));
+  }
+}
+
 #define MASK_GROUP_SIZE (sizeof(uint64_t) * 8)
 #define MASK_WIDTH PANEL_WIDTH / MASK_GROUP_SIZE
+
+template <typename F>
+void write_mask(const uint64_t (&mask)[PANEL_HEIGHT][MASK_WIDTH], F draw_fn) {
+  for (uint16_t y = 0; y < PANEL_HEIGHT; y++) {
+    for (uint16_t x_group = 0; x_group < MASK_WIDTH; x_group++) {
+      uint64_t row = mask[y][x_group];
+
+      while (row) {
+        int next_location = __builtin_ctzll(row);
+        uint16_t x = x_group * MASK_GROUP_SIZE + next_location;
+        draw_fn(x, y);
+        row &= ~(1ULL << next_location);
+      }
+    }
+  }
+}
 
 const uint64_t water_mask[PANEL_HEIGHT][MASK_WIDTH] = {
     {0x0000000000000000}, {0x0000000000000000}, {0x0000000000000000},

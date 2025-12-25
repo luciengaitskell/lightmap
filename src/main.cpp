@@ -17,50 +17,11 @@ unsigned long t1, t2;
 
 unsigned int displayed_path_steps = 0;
 
-uint8_t map_coord_onscreen(const int16_t coord) {
-  if (coord == -1) {
-    return 0;
-  }
-  if (coord == -2) {
-    return PANEL_WIDTH - 1;
-  }
-  return coord;
-}
-
-void write_path(const int16_t (*path)[2], uint16_t length) {
-  for (uint16_t i = 0; i < length; i++) {
-    if (
-        // Incorrect off-screen value
-        path[i][0] < -2 || path[i][1] < -2 ||
-        //
-        path[i][0] >= PANEL_WIDTH || path[i][1] >= PANEL_HEIGHT) {
-      continue;
-    }
-
-    uint8_t x = map_coord_onscreen(path[i][0]);
-    uint8_t y = map_coord_onscreen(path[i][1]);
-
-    if (path[i][0] >= 0 && path[i][1] >= 0)
-      matrix->drawPixelRGB888(x, y, 255, 255, 255);
-    else if (i == length - 1) // show dimmed indicator of offscreen position
-      matrix->drawPixelRGB888(x, y, 96, 96, 96);
-  }
-}
-
-template <typename F>
-void write_mask(const uint64_t (&mask)[PANEL_HEIGHT][MASK_WIDTH], F draw_fn) {
-  for (uint16_t y = 0; y < PANEL_HEIGHT; y++) {
-    for (uint16_t x_group = 0; x_group < MASK_WIDTH; x_group++) {
-      uint64_t row = mask[y][x_group];
-
-      while (row) {
-        int next_location = __builtin_ctzll(row);
-        uint16_t x = x_group * MASK_GROUP_SIZE + next_location;
-        draw_fn(x, y);
-        row &= ~(1ULL << next_location);
-      }
-    }
-  }
+void path_draw_pixel(uint8_t x, uint8_t y, bool on_screen, bool is_last) {
+  if (on_screen)
+    matrix->drawPixelRGB888(x, y, 255, 255, 255);
+  else if (is_last) // show dimmed indicator of offscreen position
+    matrix->drawPixelRGB888(x, y, 96, 96, 96);
 }
 
 uint16_t water_phase = 0;
@@ -131,7 +92,7 @@ void loop() {
 #else
   matrix->fillScreenRGB888(0, 10, 0);
   write_mask(water_mask, water_draw_pixel);
-  write_path(run_path, displayed_path_steps);
+  write_path(run_path, displayed_path_steps, path_draw_pixel);
   if (water_phase % 16 == 0) {
     displayed_path_steps = (displayed_path_steps + 1) % (RUN_PATH_LENGTH + 1);
   }
