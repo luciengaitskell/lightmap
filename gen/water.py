@@ -18,6 +18,8 @@ OUT_H = 64
 
 TAGS_LIST = [
     {"natural": "water"},
+    # can even query by name:
+    # {"name": "32 Stata Center"},
 ]
 
 

@@ -39,6 +39,10 @@ void water_draw_pixel(uint8_t x, uint8_t y) {
   matrix->drawPixelRGB888(x, y, 0, 0, mag_shifted);
 }
 
+void building_draw_pixel(uint8_t x, uint8_t y) {
+  matrix->drawPixelRGB888(x, y, 255, 120, 0);
+}
+
 void setup() {
 
   delay(100);
@@ -92,6 +96,7 @@ void loop() {
 #else
   matrix->fillScreenRGB888(0, 10, 0);
   write_mask(water_mask, water_draw_pixel);
+  write_mask(stata_mask, building_draw_pixel);
   write_path(run_path, displayed_path_steps, path_draw_pixel);
   if (water_phase % 16 == 0) {
     displayed_path_steps = (displayed_path_steps + 1) % (RUN_PATH_LENGTH + 1);
