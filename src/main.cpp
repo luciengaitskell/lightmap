@@ -18,6 +18,14 @@ MatrixPanel_I2S_DMA *matrix = nullptr;
 unsigned long clock_dragging_count = 0;
 unsigned long t1, t2;
 
+unsigned int displayed_path_steps = 0;
+
+void write_path(const uint8_t (*path)[2], uint16_t length) {
+  for (uint16_t i = 0; i < length; i++) {
+    matrix->drawPixelRGB888(path[i][0], path[i][1], 255, 255, 255);
+  }
+}
+
 template <typename F>
 void write_mask(const uint64_t (&mask)[PANEL_HEIGHT][MASK_WIDTH], F draw_fn) {
   for (uint16_t y = 0; y < PANEL_HEIGHT; y++) {
@@ -102,6 +110,10 @@ void loop() {
 #else
   matrix->fillScreenRGB888(0, 10, 0);
   write_mask(water_mask, water_draw_pixel);
+  write_path(run_path, displayed_path_steps);
+  if (water_phase % 16 == 0) {
+    displayed_path_steps = (displayed_path_steps + 1) % (RUN_PATH_LENGTH + 1);
+  }
 #endif
   water_phase++;
 
