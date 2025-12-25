@@ -1,6 +1,3 @@
-// How to use this library with a FM6126 panel, thanks goes to:
-// https://github.com/hzeller/rpi-rgb-led-matrix/issues/746
-
 #ifdef IDF_BUILD
 #include "sdkconfig.h"
 #include <driver/gpio.h>
