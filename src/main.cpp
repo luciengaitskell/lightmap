@@ -78,18 +78,6 @@ void setup() {
     matrix->flipDMABuffer();
 
     delay(1000 / matrix->calculated_refresh_rate);
-
-    // background
-    matrix->fillScreenRGB888(0, 0, 63);
-    // for checking orientation
-    matrix->drawPixelRGB888(0, 0, 1, 1, 1);
-    matrix->drawPixelRGB888(0, 31, 1, 1, 1);
-
-    // path example
-    matrix->fillRect(48, 32, 1, 12, (1 << 16) - 1);
-    matrix->fillRect(48, 44, 10, 1, (1 << 16) - 1);
-    matrix->fillRect(58, 44, 1, 10, (1 << 16) - 1);
-    matrix->fillRect(38, 54, 20, 1, (1 << 16) - 1);
   }
   Serial.printf(
       "Matrix initialized, refresh rate: %u Hz, color depth: %u bits\n",
@@ -112,6 +100,7 @@ void loop() {
     }
   }
 #else
+  matrix->fillScreenRGB888(0, 10, 0);
   write_mask(water_mask, water_draw_pixel);
 #endif
   water_phase++;
