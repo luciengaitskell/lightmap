@@ -17,16 +17,33 @@ unsigned long t1, t2;
 
 unsigned int displayed_path_steps = 0;
 
+uint8_t map_coord_onscreen(const int16_t coord) {
+  if (coord == -1) {
+    return 0;
+  }
+  if (coord == -2) {
+    return PANEL_WIDTH - 1;
+  }
+  return coord;
+}
+
 void write_path(const int16_t (*path)[2], uint16_t length) {
   for (uint16_t i = 0; i < length; i++) {
     if (
-        // Off-screen path
-        path[i][0] < 0 || path[i][1] < 0 ||
+        // Incorrect off-screen value
+        path[i][0] < -2 || path[i][1] < -2 ||
         //
         path[i][0] >= PANEL_WIDTH || path[i][1] >= PANEL_HEIGHT) {
       continue;
     }
-    matrix->drawPixelRGB888(path[i][0], path[i][1], 255, 255, 255);
+
+    uint8_t x = map_coord_onscreen(path[i][0]);
+    uint8_t y = map_coord_onscreen(path[i][1]);
+
+    if (path[i][0] >= 0 && path[i][1] >= 0)
+      matrix->drawPixelRGB888(x, y, 255, 255, 255);
+    else if (i == length - 1) // show dimmed indicator of offscreen position
+      matrix->drawPixelRGB888(x, y, 96, 96, 96);
   }
 }
 
