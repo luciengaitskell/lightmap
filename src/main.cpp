@@ -15,6 +15,7 @@
 
 MatrixPanel_I2S_DMA *matrix = nullptr;
 
+unsigned long clock_dragging_count = 0;
 unsigned long t1, t2;
 
 template <typename F>
@@ -125,13 +126,18 @@ void loop() {
     delay(dma_flip_time - t2);
   }
 
-  unsigned long frame_time = 15;
+  unsigned long frame_time = 18;
   t2 = millis() - t1;
   if (t2 < frame_time) {
     delay(frame_time - t2);
     // Serial.printf("frame time: %lu ms\n", t2);
   } else {
-    // Serial.printf("took too long: %lu ms\n", t2);
+    clock_dragging_count++;
+    if (clock_dragging_count % 100 == 0) {
+      Serial.printf(
+          "Warning: frames have taken too long: %lu ms (drag=%lu ms)\n", t2,
+          t2 - frame_time);
+    }
     matrix->drawPixelRGB888(63, 63, 255, 0, 0);
     delay(1);
   }
