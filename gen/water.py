@@ -71,6 +71,19 @@ def rasterize_mask(geoms, north, south, east, west, h=64, w=64) -> np.ndarray:
     return mask
 
 
+def mask_to_bitmap_rows(mask: np.ndarray) -> np.ndarray:
+    if mask.ndim != 2:
+        raise ValueError("mask must be 2D")
+    h, w = mask.shape
+    if w > 64:
+        raise ValueError("mask width must be <= 64 to fit in uint64")
+
+    bits = (mask != 0).astype(np.uint64)
+    shifts = np.arange(w, dtype=np.uint64)
+    rows = (bits << shifts).sum(axis=1, dtype=np.uint64)
+    return rows
+
+
 def main():
     validate_bbox(NORTH, SOUTH, EAST, WEST)
 
@@ -86,6 +99,13 @@ def main():
     # ASCII preview
     for y in range(mask.shape[0]):
         print("".join("█" if mask[y, x] else "·" for x in range(mask.shape[1])))
+
+    rows = mask_to_bitmap_rows(mask)
+    print("\nBitmap rows (uint64, bit0=x=0):")
+    print("{")
+    for y, val in enumerate(rows):
+        print("{" + f"0x{int(val):016x}" + "},")
+    print("}")
 
 
 if __name__ == "__main__":
